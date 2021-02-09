@@ -85,6 +85,7 @@ def create_leisure():
         if request.method == 'GET':
             return render_template('create_leisure.html', title='YATAM - Create User Leisure')
         elif request.method == 'POST':
+            print('hola')
             name = request.form['name']
             coordinates = request.form['coordinates']
             coordinates = coordinates.split(',')
