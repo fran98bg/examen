@@ -1,0 +1,151 @@
+{% extends 'base.html'%}
+{% block content %}
+<div class="block"></div>
+<div class="columns">
+    <div class="column is-8 is-offset-2">
+        <div class="box">
+            <div class="card">
+                <div class="card-image">
+                    <figure class="image is-4by3">
+                        <img src={{ leisure.url_photo }}/>
+                    </figure>
+                </div>
+                <div class="card-content">
+                    <div class="media">
+                        <div class="media-left">
+                            <figure class="image is-48x48">
+                                <img src={{ leisure.user.profile_picture }}>
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <p class="title is-4 has-text-grey-darker">{{ leisure.user.display_name }}</p>
+                            <p class="subtitle is-6 has-text-grey">{{ leisure.user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="content">
+                        <div class="columns">
+                            <div class="column is-10" id="padre">
+                                <p class="title is-4 has-text-grey-darker" id="name">{{ leisure.name }}</p>
+                                <p id="descripcion">{{ leisure.description }}</p>
+                                <p id="address">{{ leisure.address }}</p>
+                                        <br/>
+                                    {{ leisure.schedule }}
+                            <input type="hidden" value="{{leisure.key}}" id="leisure_key">
+                            {% if leisure.user.uid == session.get('current_user_uid') %}
+                            <div id="botones" class="level-right">
+                                <button id="editar" class="button is-text" onclick=editar()>Editar</button>
+                                <form id="formEliminar" action="/leisure/user/delete" method="POST">
+                                    <input type="hidden" name="key" value="{{leisure.key}}">
+                                    <button id="eliminar" class="button is-text" type="submit">Borrar</button>
+                                </form>
+                                </div>
+                            {% else %}
+                                    <div id="likebutton" class="level-right">
+                                        {% if check_like(leisure.key) %}
+                                            <form action="/likeincrement" method="POST">
+                                                <input type="hidden" name="key" value="{{ leisure.key }}" />
+                                                <input type="hidden" name="type" value="USER" />
+                                                <button type='submit' class="button is-primary is-light">
+                                                <i class="fas fa-thumbs-up"></i>
+                                    &nbsp;&nbsp;            {{ leisure.n_likes }}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="/likeincrement" method="POST">
+                                            <input type="hidden" name="key" value="{{ leisure.key }}" />
+                                            <input type="hidden" name="type" value="USER" />
+                                            <button type='submit' class="button is-primary is-light">
+                                            <i class="far fa-thumbs-up"></i>
+                                    &nbsp;&nbsp;      {{ leisure.n_likes }}
+                                            </button>
+                                            </form>
+                                    </div>
+                                        {% endif %}
+                            {% endif %}
+                                        </div>
+                                </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br><br>
+    </div>
+</div>
+
+<script>
+
+    function editar(){
+        var padre = document.getElementById("padre");
+        var descripcion = document.getElementById("descripcion");
+        var name = document.getElementById("name");
+        var address = document.getElementById("address")
+        var padreBotones = document.getElementById("botones");
+        var botonEdit = document.getElementById("editar");
+        var botonDelete = document.getElementById("formEliminar");
+
+        var inputName = document.createElement('input');
+        inputName.type ='text';
+        inputName.setAttribute("id", "inputText");
+        inputName.setAttribute("value", name.textContent)
+
+        var inputDescripcion = document.createElement('input');
+        inputDescripcion.type='text';
+        inputDescripcion.setAttribute("id", "inputDescripcion");
+        inputDescripcion.setAttribute("value", descripcion.textContent);
+
+        var salto = document.createElement('br');
+        var salto2 = document.createElement('br');
+        var salto3 = document.createElement('br');
+        var salto4 = document.createElement('br');
+        padre.replaceChild(inputName, name);
+        padre.replaceChild(inputDescripcion, descripcion);
+        padre.insertBefore(salto, inputDescripcion);
+        padre.insertBefore(salto2, salto);
+        padre.insertBefore(salto3, address);
+        padre.insertBefore(salto4, salto3);
+
+        padreBotones.removeChild(botonEdit);
+        padreBotones.removeChild(botonDelete);
+
+        var botonConfirmar = document.createElement('button');
+        var botonCancelar = document.createElement('button');
+        var key = document.getElementById("leisure_key").value;
+        botonCancelar.setAttribute("class", "button is-danger");
+        botonCancelar.textContent = "Cancelar";
+        botonConfirmar.setAttribute("class", "button is-primary");
+        botonConfirmar.textContent = "Confirmar";
+        botonConfirmar.onclick = function (){
+
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = () => {
+                    if (request.readyState == XMLHttpRequest.DONE && request.status ==200) {
+                       window.location.href="/leisure/user?key="+key;
+                    }
+                };
+                request.open('POST', '/leisure/user/update', true);
+                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
+                request.setRequestHeader('Access-Control-Allow-Origin', '*');
+                request.send(`key=${key}&name=${inputName.value}&description=${inputDescripcion.value}`);
+        }
+
+
+        botonCancelar.onclick = function (){
+            window.location.reload();
+        }
+
+        var salto6 = document.createElement('br');
+        var salto7 = document.createElement('br');
+        var espacio = document.createTextNode(`  `);
+        padre.appendChild(salto6);
+        padre.appendChild(salto7);
+        padre.appendChild(botonConfirmar);
+        padre.appendChild(espacio);
+        padre.appendChild(botonCancelar);
+
+
+    }
+
+</script>
+{% endblock %}
